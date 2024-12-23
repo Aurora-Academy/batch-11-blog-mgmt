@@ -18,6 +18,7 @@ const userSchema = new Schema(
     isEmailVerified: { type: Boolean, default: false }, // false
     isActive: { type: Boolean, default: true }, // Blocked or not?
     image: { type: String },
+    token: { type: String },
   },
   { timestamps: true }
 );
