@@ -1,12 +1,22 @@
 const router = require("express").Router();
 
-const { upload } = require("../../utils/multer");
-const userController = require("./user.controller");
 const { registerValidation } = require("./user.validation");
+const { secureAPI } = require("../../utils/secure");
+const { upload } = require("../../utils/multer");
 
-router.get("/", (req, res, next) => {
+const userController = require("./user.controller");
+
+router.get("/", secureAPI(["admin"]), (req, res, next) => {
   try {
-    res.json({ data: null, msg: "User API is working" });
+    res.json({ data: null, msg: "User list generated successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/:id", secureAPI(), (req, res, next) => {
+  try {
+    res.json({ data: null, msg: "User id generated successfully" });
   } catch (e) {
     next(e);
   }

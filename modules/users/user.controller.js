@@ -10,7 +10,7 @@
 
 const userModel = require("./user.model");
 const { comparePassword, hashPassword } = require("../../utils/bcrypt");
-const { generateRandomToken } = require("../../utils/token");
+const { generateJWT, generateRandomToken } = require("../../utils/token");
 const { sendMail } = require("../../services/mailer");
 
 const register = async (payload) => {
@@ -33,11 +33,6 @@ const register = async (payload) => {
 
 const login = async (payload) => {
   const { email, password } = payload;
-  // does email exists?
-  // is user banned?
-  // is user email verified?
-  // does password match?
-  // allow the user to login (TODO)
   const user = await userModel.findOne({
     email,
   });
@@ -47,8 +42,12 @@ const login = async (payload) => {
   const pwMatch = comparePassword(password, user?.password);
   if (!pwMatch) throw new Error("Email or Password mismatch.");
   // Token generation (jsonwebtoken)
+  const userData = { name: user?.name, email: user?.email, roles: user?.roles };
+  const accessToken = generateJWT(userData);
   // User Identifier data
-  return "logged in";
+  const { name, email: userEmail } = user;
+  const userInfo = { name, email: userEmail, accessToken };
+  return userInfo;
 };
 
 const verifyEmail = async (payload) => {
