@@ -1,6 +1,10 @@
 const router = require("express").Router();
 
-const { registerValidation } = require("./user.validation");
+const {
+  FPValidation,
+  registerValidation,
+  verifyFPValidation,
+} = require("./user.validation");
 const { secureAPI } = require("../../utils/secure");
 const { upload } = require("../../utils/multer");
 
@@ -55,6 +59,59 @@ router.post("/verify-email", async (req, res, next) => {
     if (!email || !token) throw new Error("Email or token is missing.");
     const result = await userController.verifyEmail(req.body);
     res.json({ data: result, msg: "Email verified successfully." });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/generate-fp", FPValidation, async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    await userController.generateFPToken(email);
+    res.json({
+      data: null,
+      msg: "Password reset link generated successfully.",
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/verify-fp", verifyFPValidation, async (req, res, next) => {
+  try {
+    await userController.verifyFPToken(req.body);
+    res.json({
+      data: null,
+      msg: "Password reset successfully.",
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.put(
+  "/change-password",
+  secureAPI(["user", "admin"]),
+  async (req, res, next) => {
+    try {
+      await userController.changePassword(req);
+      res.json({
+        data: null,
+        msg: "Password changed successfully.",
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+router.put("/reset-password", secureAPI(["admin"]), async (req, res, next) => {
+  try {
+    await userController.resetPassword(req.body);
+    res.json({
+      data: null,
+      msg: "Password reset successfully.",
+    });
   } catch (e) {
     next(e);
   }

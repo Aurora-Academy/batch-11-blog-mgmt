@@ -17,6 +17,7 @@ const secureAPI = (sysRoles = []) => {
       });
       if (!user) throw new Error("User not found");
       if (sysRoles.length === 0) {
+        req.currentUser = user?._id;
         next();
       } else {
         // RBAC AUTHORIZATION (Role Based Access Control)
@@ -24,6 +25,7 @@ const secureAPI = (sysRoles = []) => {
         if (!isValidRole) throw new Error("User unauthorized");
         // PBAC Authorization {admin: ["manage", 'create", "read", "delete", "write"]}
         // OAUTH, OAUTH 2.0
+        req.currentUser = user?._id;
         next();
       }
     } catch (e) {
