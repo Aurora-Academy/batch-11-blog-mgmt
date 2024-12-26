@@ -10,17 +10,19 @@ const { upload } = require("../../utils/multer");
 
 const userController = require("./user.controller");
 
-router.get("/", secureAPI(["admin"]), (req, res, next) => {
+router.get("/", secureAPI(["admin"]), async (req, res, next) => {
   try {
-    res.json({ data: null, msg: "User list generated successfully" });
+    const result = await userController.list();
+    res.json({ data: result, msg: "User list generated successfully" });
   } catch (e) {
     next(e);
   }
 });
 
-router.get("/:id", secureAPI(), (req, res, next) => {
+router.get("/profile", secureAPI(["admin", "user"]), async (req, res, next) => {
   try {
-    res.json({ data: null, msg: "User id generated successfully" });
+    const result = await userController.getProfile(req?.currentUser);
+    res.json({ data: result, msg: "Profile generate successfully" });
   } catch (e) {
     next(e);
   }
@@ -112,6 +114,35 @@ router.put("/reset-password", secureAPI(["admin"]), async (req, res, next) => {
       data: null,
       msg: "Password reset successfully.",
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/:id", secureAPI(["admin"]), async (req, res, next) => {
+  try {
+    const result = await userController.getById(req.params.id);
+    res.json({ data: result, msg: "User details generated successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch("/:id/roles", secureAPI(["admin"]), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await userController.updateRole(id, req.body);
+    res.json({ data: null, msg: "User roles updated successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch("/:id/block", secureAPI(["admin"]), async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await userController.blockUser(id);
+    res.json({ data: null, msg: "User status updated successfully" });
   } catch (e) {
     next(e);
   }

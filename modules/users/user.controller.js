@@ -1,21 +1,19 @@
-/*
-1. register + profile setup
-2. email verify
-3. login
-4. forget password
-5. change password
-6. reset password
-7. block user
-8. Role change
-9. my profile
-10. list all users admin (aggregation)
-11. admin see user by id
-*/
-
 const userModel = require("./user.model");
 const { comparePassword, hashPassword } = require("../../utils/bcrypt");
 const { generateJWT, generateRandomToken } = require("../../utils/token");
 const { sendMail } = require("../../services/mailer");
+
+const blockUser = async (id) => {
+  const user = await userModel.findOne({ _id: id });
+  if (!user) throw new Error("User not found");
+  const currentStatus = user?.isActive;
+  const updatedUser = await userModel.updateOne(
+    { _id: user?._id },
+    { isActive: !currentStatus }
+  );
+  if (!updatedUser?.acknowledged) throw new Error("Something went wrong");
+  return true;
+};
 
 const changePassword = async (request) => {
   const { currentUser, body } = request;
@@ -68,6 +66,20 @@ const generateFPToken = async (email) => {
   <br/>
   <p>Your OTP for password reset is  <strong>${newFPToken}</strong></p>`,
   });
+};
+
+const getById = async (id) => {
+  return userModel.findById({ _id: id }).select("-password -token");
+};
+
+const getProfile = async (currentUser) => {
+  return userModel
+    .findOne({ _id: currentUser })
+    .select("-password -token -roles");
+};
+
+const list = async () => {
+  return userModel.find().select("-password -token");
 };
 
 const login = async (payload) => {
@@ -124,6 +136,15 @@ const resetPassword = async (payload) => {
   return true;
 };
 
+const updateRole = async (id, payload) => {
+  const user = await userModel.findOne({ _id: id });
+  if (!user) throw new Error("User not found");
+  const { roles } = payload;
+  const newRoles = [...roles];
+  if (newRoles.length === 0) throw new Error("Roles can't be empty");
+  return userModel.updateOne({ _id: user?._id }, { roles: newRoles });
+};
+
 const verifyEmail = async (payload) => {
   const { email, token } = payload;
   const user = await userModel.findOne({ email, isActive: true });
@@ -164,11 +185,16 @@ const verifyFPToken = async (payload) => {
 };
 
 module.exports = {
+  blockUser,
   changePassword,
+  list,
   generateFPToken,
+  getById,
+  getProfile,
   login,
   register,
   resetPassword,
   verifyEmail,
   verifyFPToken,
+  updateRole,
 };
