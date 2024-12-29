@@ -12,7 +12,9 @@ const userController = require("./user.controller");
 
 router.get("/", secureAPI(["admin"]), async (req, res, next) => {
   try {
-    const result = await userController.list();
+    const { name, role, page, limit } = req.query;
+    const search = { name, role };
+    const result = await userController.list(search, page, limit);
     res.json({ data: result, msg: "User list generated successfully" });
   } catch (e) {
     next(e);

@@ -78,8 +78,66 @@ const getProfile = async (currentUser) => {
     .select("-password -token -roles");
 };
 
-const list = async () => {
-  return userModel.find().select("-password -token");
+const list = async (search, page = 1, limit = 10) => {
+  // OFFSet Pagination
+  // const start = (+page - 1) * +limit;
+  // return userModel.find().skip(start).limit(+limit);
+  const query = []; // pipeline
+  // Search
+  if (search?.name) {
+    query.push({
+      $match: {
+        name: new RegExp(search?.name, "gi"),
+      },
+    });
+  }
+  // Filter
+  if (search?.role) {
+    query.push({
+      $match: {
+        roles: search?.role,
+      },
+    });
+  }
+  // Cursor based Pagination
+  query.push(
+    {
+      $facet: {
+        metadata: [
+          {
+            $count: "total",
+          },
+        ],
+        data: [
+          {
+            $skip: (+page - 1) * +limit,
+          },
+          {
+            $limit: +limit,
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        total: {
+          $arrayElemAt: ["$metadata.total", 0],
+        },
+      },
+    },
+    {
+      $project: {
+        "data.password": 0,
+      },
+    }
+  );
+  const result = await userModel.aggregate(query);
+  return {
+    total: result[0]?.total || 0,
+    data: result[0]?.data,
+    page: +page,
+    limit: +limit,
+  };
 };
 
 const login = async (payload) => {
