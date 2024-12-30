@@ -15,6 +15,7 @@ const userSchema = new Schema(
       default: "user",
       required: true,
     },
+    bio: { type: String },
     isEmailVerified: { type: Boolean, default: false }, // false
     isActive: { type: Boolean, default: true }, // Blocked or not?
     image: { type: String },
