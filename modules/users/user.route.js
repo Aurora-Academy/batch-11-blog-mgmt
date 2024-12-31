@@ -6,7 +6,9 @@ const {
   verifyFPValidation,
 } = require("./user.validation");
 const { secureAPI } = require("../../utils/secure");
-const { upload } = require("../../utils/multer");
+const { upload, storage } = require("../../utils/multer");
+
+const newUpload = upload(storage);
 
 const userController = require("./user.controller");
 
@@ -32,7 +34,7 @@ router.get("/profile", secureAPI(["admin", "user"]), async (req, res, next) => {
 
 router.post(
   "/register",
-  upload.single("image"),
+  newUpload.single("image"),
   registerValidation,
   async (req, res, next) => {
     try {

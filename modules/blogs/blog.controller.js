@@ -1,4 +1,5 @@
 const blogModel = require("./blog.model");
+const userModel = require("../users/user.model");
 
 const { ObjectId } = require("mongoose").Types;
 const { generateSlug } = require("../../utils/string");
@@ -190,11 +191,33 @@ const getAllMyBlogs = async ({ id, search, page = 1, limit = 10 }) => {
   };
 };
 
-const removeBySlug = (slug) => {};
+const removeBySlug = async (slug, owner) => {
+  const blog = await blogModel.findOne({ slug });
+  if (!blog) throw new Error("Blog not found");
+  const user = await userModel.findOne({ _id: owner });
+  if (blog?.author !== owner || !user.roles.includes("admin")) {
+    throw new Error("User unauthorized");
+  }
+  return blogModel.deleteOne({ slug });
+};
 
-const updateBySlug = (slug, payload) => {};
+const updateBySlug = async (slug, payload) => {
+  const { title, ...rest } = payload;
+  const existingBlog = await blogModel.findOne({ slug });
+  if (!existingBlog) throw new Error("Blog not found");
+  if (existingBlog?.title === title) {
+    const newSlug = generateSlug(title);
+    rest.slug = newSlug;
+  }
+  return blogModel.findOneAndUpdate({ slug }, rest, { new: true });
+};
 
-const updateStatusBySlug = (slug, payload) => {};
+const updateStatusBySlug = async (slug) => {
+  const existingBlog = await blogModel.findOne({ slug });
+  if (!existingBlog) throw new Error("Blog not found");
+  const newStatus = existingBlog?.status === "draft" ? "published" : "draft";
+  return blogModel.findOneAndUpdate({ slug }, { status: newStatus });
+};
 
 module.exports = {
   create,
