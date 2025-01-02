@@ -195,7 +195,10 @@ const removeBySlug = async (slug, owner) => {
   const blog = await blogModel.findOne({ slug });
   if (!blog) throw new Error("Blog not found");
   const user = await userModel.findOne({ _id: owner });
-  if (blog?.author !== owner || !user.roles.includes("admin")) {
+  if (
+    blog?.author.toString() !== owner.toString() ||
+    !!user?.roles.includes("admin")
+  ) {
     throw new Error("User unauthorized");
   }
   return blogModel.deleteOne({ slug });
@@ -205,9 +208,10 @@ const updateBySlug = async (slug, payload) => {
   const { title, ...rest } = payload;
   const existingBlog = await blogModel.findOne({ slug });
   if (!existingBlog) throw new Error("Blog not found");
-  if (existingBlog?.title === title) {
+  if (existingBlog?.title !== title) {
     const newSlug = generateSlug(title);
     rest.slug = newSlug;
+    rest.title = title;
   }
   return blogModel.findOneAndUpdate({ slug }, rest, { new: true });
 };

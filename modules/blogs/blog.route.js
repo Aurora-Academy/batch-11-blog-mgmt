@@ -72,8 +72,8 @@ router.get("/:slug", async (req, res, next) => {
 
 router.put(
   "/:slug",
-  secureAPI(["admin", "user"]),
   blogUpload.single("image"),
+  secureAPI(["admin", "user"]),
   async (req, res, next) => {
     try {
       if (req.file) {
