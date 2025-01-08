@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
@@ -12,6 +13,7 @@ mongoose
   .then(() => console.log("Database is connected..."))
   .catch((e) => console.log("Database connection failed", e.toString()));
 
+app.use(cors());
 app.use(morgan("tiny"));
 app.use(express.json()); // enabling req.body
 app.use("/resources", express.static("public")); // enabling file access from public folder
