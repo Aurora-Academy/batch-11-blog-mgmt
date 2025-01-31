@@ -8,7 +8,7 @@ const {
 const { secureAPI } = require("../../utils/secure");
 const { upload, storage } = require("../../utils/multer");
 
-const newUpload = upload(storage);
+const newUpload = upload(storage());
 
 const userController = require("./user.controller");
 
@@ -42,7 +42,7 @@ router.post(
         const image = req.file.path.replace("public", "");
         req.body.image = image;
       }
-      const result = await userController.register(req.body);
+      await userController.register(req.body);
       res.json({ data: null, msg: "User registered successfully." });
     } catch (e) {
       next(e);
