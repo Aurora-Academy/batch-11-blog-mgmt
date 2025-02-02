@@ -9,6 +9,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log("Email Server is ready to take our messages");
+  }
+});
+
 const sendMail = async ({ to, subject, message }) => {
   // send mail with defined transport object
   const info = await transporter.sendMail({

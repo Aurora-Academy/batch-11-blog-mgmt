@@ -70,6 +70,17 @@ router.post("/verify-email", async (req, res, next) => {
   }
 });
 
+router.post("/regen-email-verification", async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) throw new Error("Email is missing.");
+    const result = await userController.regenEmailVerification(email);
+    res.json({ data: null, msg: "Email sent successfully." });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.post("/generate-fp", FPValidation, async (req, res, next) => {
   try {
     const { email } = req.body;

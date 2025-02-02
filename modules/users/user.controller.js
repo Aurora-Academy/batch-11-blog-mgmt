@@ -177,6 +177,28 @@ const register = async (payload) => {
   }
 };
 
+const regenEmailVerification = async (email) => {
+  const token = generateRandomToken();
+  const userExists = await userModel.findOne({
+    email,
+    isEmailVerified: false,
+    isActive: true,
+  });
+  if (!userExists) throw new Error("User not found");
+  const user = await userModel.updateOne({ email }, { token });
+  if (user) {
+    await sendMail({
+      to: email,
+      subject: "Welcome to BlogQuill",
+      message: `
+    Dear ${userExists.name},
+    <br/>
+    <br/>
+    <p>Thank you for signing up! <br/> Your OTP FOR email verification is  <strong>${token}</strong></p>`,
+    });
+  }
+};
+
 const resetPassword = async (payload) => {
   const { email, newPassword } = payload;
   // user check
@@ -250,6 +272,7 @@ module.exports = {
   getById,
   getProfile,
   login,
+  regenEmailVerification,
   register,
   resetPassword,
   verifyEmail,
