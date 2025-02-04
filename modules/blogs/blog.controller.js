@@ -63,6 +63,89 @@ const list = async ({ search, page = 1, limit = 10 }) => {
         content: 1,
         status: 1,
         slug: 1,
+        image: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    }
+  );
+  query.push(
+    {
+      $facet: {
+        metadata: [
+          {
+            $count: "total",
+          },
+        ],
+        data: [
+          {
+            $skip: (+page - 1) * +limit,
+          },
+          {
+            $limit: +limit,
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        total: {
+          $arrayElemAt: ["$metadata.total", 0],
+        },
+      },
+    }
+  );
+  const result = await blogModel.aggregate(query);
+  return {
+    total: result[0]?.total || 0,
+    data: result[0]?.data,
+    page: +page,
+    limit: +limit,
+  };
+};
+
+const getAllBlogs = async ({ search, page = 1, limit = 10 }) => {
+  const query = [
+    {
+      $match: {
+        status: "published",
+      },
+    },
+  ]; // pipeline
+  // Search
+  if (search?.title) {
+    query.push({
+      $match: {
+        title: new RegExp(search?.name, "gi"),
+      },
+    });
+  }
+  // Cursor based Pagination
+  query.push(
+    {
+      $lookup: {
+        from: "users",
+        localField: "author",
+        foreignField: "_id",
+        as: "author",
+      },
+    },
+    {
+      $unwind: {
+        path: "$author",
+        preserveNullAndEmptyArrays: false,
+      },
+    },
+    {
+      $project: {
+        "author.name": 1,
+        "author.email": 1,
+        "author.bio": 1,
+        title: 1,
+        content: 1,
+        status: 1,
+        slug: 1,
+        image: 1,
         createdAt: 1,
         updatedAt: 1,
       },
@@ -151,6 +234,7 @@ const getAllMyBlogs = async ({ id, search, page = 1, limit = 10 }) => {
         content: 1,
         status: 1,
         slug: 1,
+        image: 1,
         createdAt: 1,
         updatedAt: 1,
       },
@@ -225,6 +309,7 @@ const updateStatusBySlug = async (slug) => {
 
 module.exports = {
   create,
+  getAllBlogs,
   getAllMyBlogs,
   getBySlug,
   list,

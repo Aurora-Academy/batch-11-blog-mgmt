@@ -6,6 +6,17 @@ const { upload, storage } = require("../../utils/multer");
 
 const blogUpload = upload(storage("public/blogs"));
 
+router.get("/published", async (req, res, next) => {
+  try {
+    const { title, page, limit } = req.query;
+    const search = { title };
+    const result = await blogController.getAllBlogs({ search, page, limit });
+    res.json({ data: result, msg: "Blog list generated successfully" });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get("/", secureAPI(["admin"]), async (req, res, next) => {
   try {
     const { title, status, page, limit } = req.query;
