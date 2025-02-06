@@ -105,23 +105,22 @@ const list = async ({ search, page = 1, limit = 10 }) => {
 };
 
 const getAllBlogs = async ({ search, page = 1, limit = 10 }) => {
-  const query = [
-    {
-      $match: {
-        status: "published",
-      },
-    },
-  ]; // pipeline
+  const query = []; // pipeline
   // Search
   if (search?.title) {
     query.push({
       $match: {
-        title: new RegExp(search?.name, "gi"),
+        title: new RegExp(search?.title, "gi"),
       },
     });
   }
   // Cursor based Pagination
   query.push(
+    {
+      $match: {
+        status: "published",
+      },
+    },
     {
       $lookup: {
         from: "users",
