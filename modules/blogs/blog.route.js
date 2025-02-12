@@ -69,6 +69,22 @@ router.get(
   }
 );
 
+router.get(
+  "/admin/:id",
+  secureAPI(["admin", "user"]),
+  async (req, res, next) => {
+    try {
+      const result = await blogController.getById(req.params.id);
+      res.json({
+        data: result,
+        msg: "Admin blog details generated successfully",
+      });
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
 router.get("/:slug", async (req, res, next) => {
   try {
     const result = await blogController.getBySlug(req.params.slug);

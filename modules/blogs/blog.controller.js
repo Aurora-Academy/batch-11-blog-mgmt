@@ -20,6 +20,12 @@ const getBySlug = (slug) => {
     .populate({ path: "author", select: "name email bio" });
 };
 
+const getById = (id) => {
+  return blogModel
+    .findOne({ _id: id })
+    .populate({ path: "author", select: "name email bio" });
+};
+
 const list = async ({ search, page = 1, limit = 10 }) => {
   const query = []; // pipeline
   // Search
@@ -310,6 +316,7 @@ module.exports = {
   create,
   getAllBlogs,
   getAllMyBlogs,
+  getById,
   getBySlug,
   list,
   removeBySlug,
