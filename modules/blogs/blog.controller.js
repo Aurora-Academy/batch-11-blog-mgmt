@@ -309,7 +309,11 @@ const updateStatusBySlug = async (slug) => {
   const existingBlog = await blogModel.findOne({ slug });
   if (!existingBlog) throw new Error("Blog not found");
   const newStatus = existingBlog?.status === "draft" ? "published" : "draft";
-  return blogModel.findOneAndUpdate({ slug }, { status: newStatus });
+  return blogModel.findOneAndUpdate(
+    { slug },
+    { status: newStatus },
+    { new: true }
+  );
 };
 
 module.exports = {
