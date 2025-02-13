@@ -281,13 +281,13 @@ const getAllMyBlogs = async ({ id, search, page = 1, limit = 10 }) => {
 };
 
 const removeBySlug = async (slug, owner) => {
+  console.log(slug, owner);
   const blog = await blogModel.findOne({ slug });
   if (!blog) throw new Error("Blog not found");
   const user = await userModel.findOne({ _id: owner });
-  if (
-    blog?.author.toString() !== owner.toString() ||
-    !!user?.roles.includes("admin")
-  ) {
+  const isOwner = blog?.author.toString() === owner.toString();
+  const isAdmin = user?.roles.includes("admin");
+  if (!isOwner || !isAdmin) {
     throw new Error("User unauthorized");
   }
   return blogModel.deleteOne({ slug });
